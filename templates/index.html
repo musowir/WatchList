@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        /* Default styles */
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2196F3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Styles for screens with a maximum width of 600px */
+        /*@media only screen and (max-width: 600px) {
+            h1 {
+                font-size: 18px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th,
+            td {
+                padding: 4px;
+            }
+        }*/
+
+        a {
+            text-decoration: none;
+            font-size: 18;
+        }
+
+        /* Styles for the "Add Movie" form */
+        .add-movie {
+            margin-bottom: 20px;
+        }
+
+        .add-movie input[type="text"],
+        .add-movie input[type="number"],
+        .add-movie input[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+        }
+
+        .add-movie input[type="submit"] {
+            background-color: #2f302f;
+            color: white;
+            cursor: pointer;
+        }
+
+        .add-movie input[type="submit"]:hover {
+            background-color: rgb(35, 35, 35);
+        }
+
+        /* Styles for the "Favorites" button */
+        .favs {
+            margin-bottom: 20px;
+        }
+
+        .favs button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+        }
+
+        .favs button:hover {
+            background-color: #0b7dda;
+        }
+
+        /* Styles for the "Movie Watchlist" table */
+        .list-movies {
+            resize: both;
+            overflow-x: auto;
+        }
+
+        .list-movies table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .list-movies th,
+        .list-movies td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        .list-movies th {
+            background-color: #393939;
+            color: white;
+        }
+
+        .list-movies tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .list-movies tr:hover {
+            background-color: #ddd;
+        }
+
+        .list-movies td button {
+            border: none;
+            background-color: transparent;
+            color: #2196F3;
+            cursor: pointer;
+        }
+
+        .list-movies td button:hover {
+            text-decoration: none;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Movie Watchlist</h1>
+    <div class="add-movie">
+        <form action="/add" method="POST">
+            <input type="text" name="name" placeholder="Enter movie name" required>
+            <input type="number" min="1900" max="2099" step="1" name="year" placeholder="Enter movie year" required>
+            <input type="submit" value="Add Movie">
+        </form>
+    </div>
+    <div class="favs">
+        <button onclick="toStared()">Favorites</button>
+    </div>
+    <div class="list-movies">
+
+
+        <table>
+            <thead>
+                <th></th>
+                <th width="55%">Movie</th>
+                <th colspan=4>Year</th>
+
+            </thead>
+            {% for movie in movies %}
+            {% if movie.watched %}
+            {% else %}
+            <tr>
+                <td>
+                    <button class="unwatched" onclick="updateMovie({{ loop.index0 }}, 'watched')"><big><big>&#x2610;</big></big></button>
+                </td>
+                <td width="55%">{{ movie.name }}</td>
+                <td>{{ movie.year }}</td>
+
+
+                <td>
+                    {% if movie.priority == 1 %}
+                    <a class="unflagged" style="color:#f8c242;" href="/prioritize/{{ loop.index0 }}"><big><big>&#9873;</big></big></a>
+                    {% elif movie.priority == 2 %}
+                    <a class="unflagged" style="color:#e56e48;" href="/prioritize/{{ loop.index0 }}"><big><big>&#9873;</big></big></a>
+                    {% elif movie.priority == 3 %}
+                    <a class="unflagged" style="color:#c53c59;" href="/prioritize/{{ loop.index0 }}"><big><big>&#9873;</big></big></a>
+                    {% else %}
+                    <a class="flagged" style="color:#000000;" href="/prioritize/{{ loop.index0 }}"><big><big>&#9872;</big></big></a>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="/delete/{{ loop.index0 }}" style="color:#000000;" >&#128465;</button>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+
+            {% for movie in movies %}
+            {% if movie.watched %}
+            <tr>
+                <td>
+                    <button class="watched" onclick="updateMovie({{ loop.index0 }}, 'unwatched')"><big><big>&#x2611;</big></big></button>
+                </td>
+                <td width="55%">{{ movie.name }}</td>
+                <td>{{ movie.year }}</td>
+                <td>
+                    {% if movie.flagged %}
+                    <a class="flagged" style="color: #d4af37;" href="/flag/{{ loop.index0 }}/unflagged"><big><big>&#9733;</big></big></a>
+                        {% else %}
+                        <a class="unflagged" style="color:#000000;" href="/flag/{{ loop.index0 }}/flagged"><big><big>&#9734;</big></big></a>
+                            {% endif %}
+                </td>
+                <td>
+                    <a style="color:#000000;" href="/delete/{{ loop.index0 }}">&#128465;</button>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+
+    <script>
+        function deleteMovie(index) {
+            if (confirm("Are you sure you want to delete this movie?")) {
+                window.location.href = "/delete/" + index;
+            }
+        }
+
+        function updateMovie(index, status) {
+            window.location.href = "/update/" + index + "/" + status;
+        }
+
+        function flagMovie(index, status) {
+            window.location.href = "/flag/" + index + "/" + status;
+        }
+
+        function toStared(index, status) {
+            window.location.href = "/stared";
+        }
+    </script>
+</body>
+
+</html>
